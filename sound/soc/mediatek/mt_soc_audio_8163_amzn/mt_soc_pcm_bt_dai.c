@@ -183,7 +183,7 @@ static snd_pcm_uframes_t mtk_bt_dai_pcm_pointer(
 	/* get total bytes to copy */
 	Frameidx = audio_bytes_to_frame(substream,
 		 Dai_Block->u4DMAReadIdx);
-	return Frameidx
+	return Frameidx;
 }
 
 
