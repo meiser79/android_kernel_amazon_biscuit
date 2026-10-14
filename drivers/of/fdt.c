@@ -1087,6 +1087,58 @@ static const char *config_cmdline = CONFIG_CMDLINE;
 static const char *config_cmdline = "";
 #endif
 
+#ifdef CONFIG_BISCUIT_SAFE_BOOTARGS
+/*
+ * Biscuit's Fire OS LK passes root=, dm= and a stale slot suffix that break
+ * Android boot, so CONFIG_CMDLINE is forced. Copy back only the bootloader
+ * arguments that are safe and useful to Android.
+ */
+static const char * const biscuit_safe_bootargs[] __initconst = {
+	"androidboot.serialno=",
+	"androidboot.bootreason=",
+	"boot_reason=",
+};
+
+static void __init biscuit_append_safe_bootargs(char *cmdline,
+						const char *bootargs, int len)
+{
+	const char *end = bootargs + strnlen(bootargs, len);
+	const char *arg = bootargs;
+	int i;
+
+	while (arg < end) {
+		const char *next;
+		size_t arg_len;
+
+		while (arg < end && *arg == ' ')
+			arg++;
+		next = memchr(arg, ' ', end - arg);
+		if (!next)
+			next = end;
+		arg_len = next - arg;
+
+		for (i = 0; i < ARRAY_SIZE(biscuit_safe_bootargs); i++) {
+			size_t prefix_len = strlen(biscuit_safe_bootargs[i]);
+			size_t cmdline_len = strlen(cmdline);
+
+			if (arg_len <= prefix_len ||
+			    strncmp(arg, biscuit_safe_bootargs[i], prefix_len))
+				continue;
+			if (cmdline_len + 1 + arg_len >= COMMAND_LINE_SIZE) {
+				pr_warn("No room for bootloader argument %.*s\n",
+					(int)prefix_len, arg);
+				break;
+			}
+			if (cmdline_len)
+				strlcat(cmdline, " ", COMMAND_LINE_SIZE);
+			strncat(cmdline, arg, arg_len);
+			break;
+		}
+		arg = next;
+	}
+}
+#endif
+
 int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
 				     int depth, void *data)
 {
@@ -1125,6 +1177,12 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
 			strlcpy(cmdline, p, min((int)l, COMMAND_LINE_SIZE));
 		}
 	}
+
+#ifdef CONFIG_BISCUIT_SAFE_BOOTARGS
+	p = of_get_flat_dt_prop(node, "bootargs", &l);
+	if (p != NULL && l > 0)
+		biscuit_append_safe_bootargs(cmdline, p, l);
+#endif
 
 	pr_debug("Command line is: %s\n", (char*)data);
 
