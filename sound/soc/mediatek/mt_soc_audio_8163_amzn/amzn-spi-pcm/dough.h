@@ -33,7 +33,6 @@ struct dough_audio_frame {
 struct __attribute__((__packed__)) dough_status_frame {
 #if defined CONFIG_SND_SOC_8_MICS
 	uint8_t rsvd0[15];          /* bytes 12-26 */
-	uint8_t rsvd0[6];           /* bytes 12-17 */
 #elif defined CONFIG_SND_SOC_4_MICS
 	uint8_t rsvd0[6];           /* bytes 12-17 */
 #endif
