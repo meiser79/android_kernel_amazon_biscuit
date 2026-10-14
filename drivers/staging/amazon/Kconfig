@@ -30,5 +30,12 @@ config BISCUIT
 	help
 	isolate amazon Biscuit changes for MTK Platform
 
+config BISCUIT_SAFE_BOOTARGS
+	bool "Keep only safe Biscuit bootloader arguments"
+	depends on BISCUIT && CMDLINE_FORCE && OF_EARLY_FLATTREE
+	help
+	  With CONFIG_CMDLINE_FORCE, append only androidboot.serialno=,
+	  androidboot.bootreason= and boot_reason= from the Fire OS LK
+	  bootargs, dropping its root=, dm= and stale slot arguments.
 
 endmenu
