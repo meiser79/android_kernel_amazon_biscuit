@@ -8,6 +8,13 @@
 #include "mt8163.dtsi"
 
 / {
+	/* Fixed bus numbers: userspace uses /sys/bus/i2c/devices/0-003f */
+	aliases {
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+		i2c2 = &i2c2;
+	};
+
 	memory@00000000 {
 		device_type = "memory";
 		reg = <0 0x40000000 0 0x20000000>;
