@@ -99,6 +99,8 @@ struct mtkts_bts_channel_param {
 #include "inc/mtk_ts_board_crown.h"
 #elif defined(CONFIG_THERMAL_CRONOS)
 #include "inc/mtk_ts_board_cronos.h"
+#elif defined(CONFIG_THERMAL_BISCUIT)
+#include "inc/mtk_ts_board_biscuit.h"
 #else
 #include "inc/mtk_ts_board_abf123.h"
 #endif
