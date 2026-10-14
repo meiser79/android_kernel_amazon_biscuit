@@ -25,4 +25,10 @@ config CRONOS
 	help
 	isolate amazon Cronos changes for MTK Platform
 
+config BISCUIT
+	bool "Biscuit MTK platform project"
+	help
+	isolate amazon Biscuit changes for MTK Platform
+
+
 endmenu
