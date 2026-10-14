@@ -604,6 +604,15 @@ config LEDS_IS31FL32XX
 	  LED controllers. They are I2C devices with multiple constant-current
 	  channels, each with independent 256-level PWM control.
 
+config LEDS_IS31FL3236
+	bool "LED Support for the Amazon IS31FL3236 LED ring driver"
+	depends on LEDS_CLASS && I2C && OF
+	depends on !LEDS_IS31FL32XX
+	help
+	  Amazon's IS31FL3236 driver for the Echo Dot (2nd gen) LED ring.
+	  It exposes the frame and boot_animation sysfs attributes used by
+	  the Biscuit LED daemon instead of per-channel LED class devices.
+
 comment "LED driver for blink(1) USB RGB LED is under Special HID drivers (HID_THINGM)"
 
 config LEDS_BLINKM
