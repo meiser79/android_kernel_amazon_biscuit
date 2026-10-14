@@ -804,6 +804,14 @@ config PWM_INVERTED
        help
          This option should be used if PWM and scaling factor are not directly proportional
 
+config BISCUIT_AMONET_SLOT
+	bool "Export the amonet v2 A/B slot on Biscuit"
+	depends on BISCUIT && BLOCK && EFI_PARTITION
+	help
+	  Read amonet v2's slot record at misc+0x360 before init starts and
+	  append androidboot.slot_suffix to /proc/cmdline, so Android's
+	  first-stage init can resolve slotselect fstab entries.
+
 source "drivers/misc/c2port/Kconfig"
 source "drivers/misc/eeprom/Kconfig"
 source "drivers/misc/cb710/Kconfig"
