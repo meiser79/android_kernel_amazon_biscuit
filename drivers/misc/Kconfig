@@ -812,6 +812,27 @@ config BISCUIT_AMONET_SLOT
 	  append androidboot.slot_suffix to /proc/cmdline, so Android's
 	  first-stage init can resolve slotselect fstab entries.
 
+config ALS_TSL2583
+	tristate "TAOS TSL2580, TSL2581, TSL2583 and TSL2584TSV light-to-digital converters"
+	depends on I2C && IIO
+	help
+	  Provides support for the TAOS tsl2580, tsl2581, tsl2583 and
+	  tsl2584tsv devices. Access ALS data via IIO (illuminance0_input).
+
+config ALS_TSL2584_AUTOZERO
+	bool "Enable periodic autozero of AMS TSL2584TSV"
+	depends on ALS_TSL2583
+	help
+	  Enables periodically running an autozero sequence for the AMS
+	  TSL2584TSV ALS.
+
+config SENSORS_TSL2540
+	tristate "TAOS TSL2540 ALS"
+	depends on I2C && INPUT
+	help
+	  Support for the TAOS tsl2540 ambient light sensor, reported through
+	  an input device (ABS_MISC).
+
 config AMZ_PRIV
 	bool "Amazon privacy mode"
 	depends on KEYBOARD_MTK && KPD_PWRKEY_USE_PMIC && OF_GPIO
