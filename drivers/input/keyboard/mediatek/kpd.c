@@ -25,6 +25,10 @@
 #include <linux/of_irq.h>
 #include <linux/clk.h>
 #include <linux/debugfs.h>
+#ifdef CONFIG_AMZ_PRIV
+#include <linux/amz_priv.h>
+#include <linux/gpio.h>
+#endif
 
 #define KPD_NAME	"mtk-kpd"
 #ifndef CONFIG_KPD_VOLUME_KEY_SWAP
@@ -186,6 +190,68 @@ static int kpd_delete_attr(struct device_driver *driver)
 	return err;
 }
 
+#ifdef CONFIG_AMZ_PRIV
+static struct workqueue_struct *priv_workq;
+
+struct workqueue_struct *amz_priv_get_workq(void)
+{
+	return priv_workq;
+}
+
+/*
+ * Privacy runs in the kernel on the microphone button: on release, leave
+ * privacy at once, or enter it after 300 ms unless a second press cancels.
+ */
+static void handle_privacy_button_pressed(unsigned long pressed)
+{
+	unsigned int delay;
+	int event_handled = 0;
+	unsigned long flags;
+
+	if (!pw_data)
+		return;
+
+	spin_lock_irqsave(&pw_data->lock, flags);
+	pw_data->power_key_handled = pressed ? 1 : 0;
+	spin_unlock_irqrestore(&pw_data->lock, flags);
+
+	/* Only check HW privacy state if hw latch is enabled */
+	if (pw_data->hw_latch_set)
+		pw_data->privacy_hw_state =
+			!gpio_get_value(pw_data->public_hw_st_gpio);
+	else
+		pw_data->privacy_hw_state = 0;
+
+	/*
+	 * The hardware changes the state instantaneously, so there is no
+	 * point exiting the privacy state if the hardware has not done so.
+	 */
+	if (priv_workq && !pressed && pw_data->cur_priv
+			&& !pw_data->privacy_hw_state) {
+		if (amz_priv_trigger(0))
+			pr_err("%s: exit priv failed\n", __func__);
+		else
+			event_handled = 1;
+	}
+
+	/*
+	 * !cur_priv && cur_timer_on: two presses in quick succession. If we
+	 * were not private before them, do not queue anything either.
+	 */
+	if (!pw_data->cur_priv && pw_data->cur_timer_on && !pressed) {
+		FLUSH_PRIV_WORKQ();
+		event_handled = 1;
+	}
+
+	if (priv_workq && !pressed && !pw_data->cur_priv && !event_handled) {
+		/* queue work to start priv mode in max time */
+		delay = 3 * HZ / 10;
+		queue_delayed_work(priv_workq, &pw_data->dwork, delay);
+		amz_priv_timer_sysfs(1);
+	}
+}
+#endif
+
 #ifdef CONFIG_KPD_PWRKEY_USE_PMIC
 void kpd_pwrkey_pmic_handler(unsigned long pressed)
 {
@@ -194,6 +260,9 @@ void kpd_pwrkey_pmic_handler(unsigned long pressed)
 		kpd_print("KPD input device not ready\n");
 		return;
 	}
+#ifdef CONFIG_AMZ_PRIV
+	handle_privacy_button_pressed(pressed);
+#endif
 	kpd_pmic_pwrkey_hal(pressed);
 }
 #endif
@@ -399,6 +468,14 @@ static int kpd_pdrv_probe(struct platform_device *pdev)
 		kpd_print("gpio init failed\n");
 
 	kpd_get_dts_info(pdev->dev.of_node);
+
+#ifdef CONFIG_AMZ_PRIV
+	if (!amz_priv_kickoff(&pdev->dev)) {
+		priv_workq = alloc_workqueue("priv_workq", WQ_UNBOUND, 1);
+		if (!priv_workq)
+			kpd_notice("create priv_workq failed\n");
+	}
+#endif
 
 	kpd_memory_setting();
 

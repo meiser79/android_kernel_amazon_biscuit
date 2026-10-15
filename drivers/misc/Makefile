@@ -77,3 +77,4 @@ targets += lkdtm_rodata.o lkdtm_rodata_objcopy.o
 $(obj)/lkdtm_rodata_objcopy.o: $(obj)/lkdtm_rodata.o FORCE
 	$(call if_changed,objcopy)
 obj-$(CONFIG_BISCUIT_AMONET_SLOT)	+= biscuit_amonet_slot.o
+obj-$(CONFIG_AMZ_PRIV)		+= amz_priv.o

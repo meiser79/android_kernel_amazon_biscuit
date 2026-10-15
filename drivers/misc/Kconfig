@@ -812,6 +812,16 @@ config BISCUIT_AMONET_SLOT
 	  append androidboot.slot_suffix to /proc/cmdline, so Android's
 	  first-stage init can resolve slotselect fstab entries.
 
+config AMZ_PRIV
+	bool "Amazon privacy mode"
+	depends on KEYBOARD_MTK && KPD_PWRKEY_USE_PMIC && OF_GPIO
+	help
+	  Amazon microphone privacy mode: the keypad driver drives the privacy
+	  GPIO from the device tree "amz_privacy" node when the PMIC power key
+	  (the Echo microphone button) is released, independent of userspace.
+	  State and a software trigger are exported in sysfs under the keypad
+	  device's amz_privacy/ group.
+
 source "drivers/misc/c2port/Kconfig"
 source "drivers/misc/eeprom/Kconfig"
 source "drivers/misc/cb710/Kconfig"
