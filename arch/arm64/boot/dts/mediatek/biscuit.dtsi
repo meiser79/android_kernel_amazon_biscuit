@@ -30,6 +30,7 @@
 		reg-ext-vproc-supply = <&vproc>;
 	};
 
+	/* Microphone privacy (drivers/misc/amz_priv.c, driven by the mtk-kpd power key) */
 	amz_privacy {
 		gpios = <&pio 87 1>;
 		hw_latch = <0>;
