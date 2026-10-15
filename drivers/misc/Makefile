@@ -78,3 +78,5 @@ $(obj)/lkdtm_rodata_objcopy.o: $(obj)/lkdtm_rodata.o FORCE
 	$(call if_changed,objcopy)
 obj-$(CONFIG_BISCUIT_AMONET_SLOT)	+= biscuit_amonet_slot.o
 obj-$(CONFIG_AMZ_PRIV)		+= amz_priv.o
+obj-$(CONFIG_ALS_TSL2583)	+= tsl2583.o
+obj-$(CONFIG_SENSORS_TSL2540)	+= ams_tsl2540.o ams_tsl2540_als.o ams_i2c.o
