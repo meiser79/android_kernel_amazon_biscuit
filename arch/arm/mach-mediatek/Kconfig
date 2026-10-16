@@ -1,0 +1,58 @@
+menuconfig ARCH_MEDIATEK
+	bool "Mediatek MT65xx & MT81xx SoC" if ARCH_MULTI_V7
+	select ARM_GIC
+	select PINCTRL
+	select MTK_TIMER
+	help
+          Support for Mediatek MT65xx & MT81xx SoCs
+
+if ARCH_MEDIATEK
+
+config MACH_MT2701
+	bool "MediaTek MT2701 SoCs support"
+	default n
+	select MFD_SYSCON
+
+config ARCH_MT8163
+	bool "MediaTek MT8163"
+	select SPARSE_IRQ
+	select ARM_KERNMEM_PERMS
+	select COMMON_CLK if !MTK_CLKMGR
+	select GENERIC_CLOCKEVENTS
+	select ARM_AMBA
+	select CPU_V7
+	select HAVE_SMP
+	select IRQ_DOMAIN
+	select IRQ_DOMAIN_DEBUG
+	select ARCH_REQUIRE_GPIOLIB
+	select KERNEL_MODE_NEON
+	select CRYPTO_AES_ARM_BS
+	select ARM_HAS_SG_CHAIN
+	select MTK_BASE_POWER
+	select MFD_SYSCON
+	select CPU_IDLE
+	select CPU_IDLE_GOV_MTK
+	select ARM_ERRATA_814220
+	select MTK_SYS_CIRQ
+	select MTK_GIC_EXT
+	select MTK_SYSTRACKER
+	select ARM_GIC_V3
+	select HIGHMEM
+	select NEON
+	select AEABI
+	select VFP
+	select SMP
+	select USE_OF
+	select HAVE_ARM_ARCH_TIMER
+	select POWER_SUPPLY
+	select POWER_RESET
+	select AUTO_ZRELADDR
+	select ARM_PSCI
+	select ARM_CRYPTO
+	help
+	  This enable support for MediaTek MT8163. If you need support
+	  for MediaTek MT8163, say Y here.
+	  Please note this also select ARCH_MEDIATEK, so driver depends
+	  on it can be selected.
+
+endif
