@@ -916,11 +916,62 @@ static const char *config_cmdline = CONFIG_CMDLINE;
 static const char *config_cmdline = "";
 #endif
 
+#ifdef CONFIG_CMDLINE_FORCE
+static void __init biscuit_append_fdt_bootarg_param(char *cmdline,
+						    const char *bootargs,
+						    const char *prefix)
+{
+	const char *param, *end;
+	char value[COMMAND_LINE_SIZE];
+	size_t len, prefix_len, current_len;
+
+	param = strstr(bootargs, prefix);
+	if (!param)
+		return;
+
+	if (param != bootargs && param[-1] != ' ')
+		return;
+
+	end = strchr(param, ' ');
+	len = end ? end - param : strlen(param);
+	prefix_len = strlen(prefix);
+	if (len <= prefix_len)
+		return;
+
+	current_len = strlen(cmdline);
+	if (current_len + 1 + len >= COMMAND_LINE_SIZE) {
+		pr_warn("Not enough room for bootloader cmdline parameter %s\n",
+			prefix);
+		return;
+	}
+
+	memcpy(value, param, len);
+	value[len] = '\0';
+	if (current_len)
+		strlcat(cmdline, " ", COMMAND_LINE_SIZE);
+	strlcat(cmdline, value, COMMAND_LINE_SIZE);
+}
+
+static void __init biscuit_append_safe_fdt_bootargs(char *cmdline,
+						   const char *bootargs)
+{
+	biscuit_append_fdt_bootarg_param(cmdline, bootargs,
+					       "androidboot.serialno=");
+	biscuit_append_fdt_bootarg_param(cmdline, bootargs,
+					       "androidboot.bootreason=");
+	biscuit_append_fdt_bootarg_param(cmdline, bootargs, "boot_reason=");
+}
+#endif
+
 int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
 				     int depth, void *data)
 {
 	int l = 0;
 	const char *p = NULL;
+#ifdef CONFIG_CMDLINE_FORCE
+	int biscuit_bootargs_len = 0;
+	const char *biscuit_bootargs = NULL;
+#endif
 	char *cmdline = data;
 
 	pr_debug("search \"chosen\", depth: %d, uname: %s\n", depth, uname);
@@ -938,6 +989,10 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
 	/* Retrieve command line unless forcing */
 	if (read_dt_cmdline)
 		p = of_get_flat_dt_prop(node, "bootargs", &l);
+#ifdef CONFIG_CMDLINE_FORCE
+	biscuit_bootargs = of_get_flat_dt_prop(node, "bootargs",
+					       &biscuit_bootargs_len);
+#endif
 
 	if (p != NULL && l > 0) {
 		if (concat_cmdline) {
@@ -953,6 +1008,10 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
 			strlcpy(cmdline, p, min((int)l, COMMAND_LINE_SIZE));
 		}
 	}
+#ifdef CONFIG_CMDLINE_FORCE
+	if (biscuit_bootargs != NULL && biscuit_bootargs_len > 0)
+		biscuit_append_safe_fdt_bootargs(cmdline, biscuit_bootargs);
+#endif
 
 	pr_debug("Command line is: %s\n", (char*)data);
 
