@@ -1722,7 +1722,7 @@ translate_compat_table(struct net *net,
 		goto out_unlock;
 
 	newinfo->number = number;
-	memset(newinfo->entries, 0, size);
+	/* biscuit: xt_alloc_table_info already sets per-cpu entry pointers. */
 
 	for (i = 0; i < NF_INET_NUMHOOKS; i++) {
 		newinfo->hook_entry[i] = info->hook_entry[i];
