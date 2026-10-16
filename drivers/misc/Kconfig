@@ -623,6 +623,14 @@ config SENSORS_TSL2540
 	  This driver can also be built as a module.  If so, the module
 	  will be called tsl2540.
 
+config BISCUIT_AMONET_SLOT
+	bool "Export the amonet v2 A/B slot on Biscuit"
+	depends on BISCUIT && BLOCK && EFI_PARTITION
+	help
+	  Read amonet v2's slot record at misc+0x360 before init starts and
+	  append androidboot.slot_suffix to /proc/cmdline, so Android's
+	  first-stage init can resolve slotselect fstab entries.
+
 config AMZ_PRIV
        bool "Enable Amazon Privacy Mode Support"
        default n
