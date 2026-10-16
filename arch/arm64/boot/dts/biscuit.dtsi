@@ -1,6 +1,19 @@
 #include "mt8163.dtsi"
 
 / {
+	/*
+	 * Android reads androidboot.* values from here as well as from the
+	 * command line. Keep hardware here: LineageOS's kernel.mk installs
+	 * modules whenever .config contains "=m", which "hardware=mt8163" in
+	 * CONFIG_CMDLINE would match.
+	 */
+	firmware {
+		android {
+			compatible = "android,firmware";
+			hardware = "mt8163";
+		};
+	};
+
 	memory@00000000 {
 		device_type = "memory";
 		reg = <0 0x40000000 0 0x20000000>;
