@@ -149,7 +149,7 @@ quiet_cmd_extract_certs  = EXTRACT_CERTS   $(patsubst "%",%,$(2))
 
 targets += $(obj)/x509_certificate_list
 $(obj)/x509_certificate_list: scripts/extract-cert $(X509_CERTIFICATES) $(obj)/.x509.list FORCE
-	$(call if_changed,extract_certs,verity-keys)
+	$(call if_changed,extract_certs,$(srctree)/verity-keys)
 
 targets += $(obj)/.x509.list
 $(obj)/.x509.list:
