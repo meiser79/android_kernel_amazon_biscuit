@@ -17,6 +17,7 @@
 #include <linux/types.h>
 #include <linux/kernel.h>
 #include <linux/fs.h>
+#include <linux/uio.h>
 #include <linux/cdev.h>
 #include <linux/sched.h>
 #include <asm/current.h>
@@ -188,12 +189,66 @@ unsigned int BT_poll(struct file *filp, poll_table *wait)
 	return mask;
 }
 
+/*
+ * Check the HCI frame in o_buf[0..write_size) and hand it to STP. Called with
+ * wr_mtx held.
+ */
+static INT32 bt_send_frame(INT32 write_size)
+{
+	INT32 len = 0;
+	INT32 written;
+
+	/* Get length by parsing the frame
+	   For more information of frame format,
+	   please refer the BT spec
+	 */
+	switch (o_buf[0]) {
+	case 0x01:
+		/* HCI command, type = 0x01
+		   Type(8b) OpCode(16b) length(8b)
+		   Head length = 1 + 2 + 1
+		 */
+		len = o_buf[3] + 4;
+		break;
+	case 0x02:
+		/* ACL data, type = 0x02
+		   Type(8b) handle+flag(16b) length(16b)
+		   Head length = 1 + 2 + 2
+		 */
+		len = (o_buf[3] | (o_buf[4] << 8)) + 5;
+		break;
+	case 0x03:
+		/* SCO data, type = 0x03
+		   Type(8b) handle+flag(16b) length(8b)
+		   Head length = 1 + 2 + 1
+		 */
+		len = o_buf[3] + 4;
+		break;
+	default:
+		BT_ERR_FUNC("type is %d\n", o_buf[0]);
+		return -EFAULT;
+	}
+
+	/* check frame length is valid */
+	if (len != write_size) {
+		BT_ERR_FUNC("length error %d:%d\n", len, write_size);
+		return -EFAULT;
+	}
+
+	written = mtk_wcn_stp_send_data(&o_buf[0], write_size, BT_TASK_INDX);
+	if (0 == written) {
+		/* No space is available, native program should not call BT_write with no delay */
+		BT_ERR_FUNC("Packet length %d, sent length %d, retval = %d\n",
+			    write_size, written, -ENOSPC);
+		return -ENOSPC;
+	}
+	return written;
+}
+
 ssize_t BT_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos)
 {
 	INT32 retval = 0;
 	INT32 write_size;
-	INT32 written = 0;
-	INT32 len = 0;
 
 	bt_ftrace_print("%s|S,len(%d)\n", __func__, count);
 	down(&wr_mtx);
@@ -223,55 +278,7 @@ ssize_t BT_write(struct file *filp, const char __user *buf, size_t count, loff_t
 			goto OUT;
 		}
 
-		/* Get length by parsing the frame
-		   For more information of frame format,
-		   please refer the BT spec
-		 */
-		switch (o_buf[0]) {
-		case 0x01:
-			/* HCI command, type = 0x01
-			   Type(8b) OpCode(16b) length(8b)
-			   Head length = 1 + 2 + 1
-			 */
-			len = o_buf[3] + 4;
-			break;
-		case 0x02:
-			/* ACL data, type = 0x02
-			   Type(8b) handle+flag(16b) length(16b)
-			   Head length = 1 + 2 + 2
-			 */
-			len = (o_buf[3] | (o_buf[4] << 8)) + 5;
-			break;
-		case 0x03:
-			/* SCO data, type = 0x03
-			   Type(8b) handle+flag(16b) length(8b)
-			   Head length = 1 + 2 + 1
-			 */
-			len = o_buf[3] + 4;
-			break;
-		default:
-			BT_ERR_FUNC("type is %d\n", o_buf[0]);
-			retval = -EFAULT;
-			goto OUT;
-		}
-
-		/* check frame length is valid */
-		if (len != write_size) {
-			BT_ERR_FUNC("length error %d:%d\n", len, write_size);
-			retval = -EFAULT;
-			goto OUT;
-		}
-
-		written = mtk_wcn_stp_send_data(&o_buf[0], write_size, BT_TASK_INDX);
-		if (0 == written) {
-			retval = -ENOSPC;
-			/* No space is available, native program should not call BT_write with no delay */
-			BT_ERR_FUNC
-			    ("Packet length %zd, sent length %d, retval = %d\n",
-			     count, written, retval);
-		} else {
-			retval = written;
-		}
+		retval = bt_send_frame(write_size);
 
 	} else {
 		retval = -EFAULT;
@@ -281,6 +288,41 @@ ssize_t BT_write(struct file *filp, const char __user *buf, size_t count, loff_t
 OUT:
 	up(&wr_mtx);
 	bt_ftrace_print("%s|E\n", __func__);
+	return retval;
+}
+
+/*
+ * Android's Bluetooth HAL sends the H4 packet type and the packet body as two
+ * iovecs (writev). Without write_iter the VFS turns that into one BT_write()
+ * per iovec, and the lone type byte fails the frame check ("length error
+ * 4:1"). Gather the whole packet first.
+ */
+static ssize_t BT_write_iter(struct kiocb *iocb, struct iov_iter *from)
+{
+	size_t count = iov_iter_count(from);
+	INT32 write_size;
+	INT32 retval;
+
+	down(&wr_mtx);
+	if (rstflag) {
+		retval = rstflag == 1 ? -88 : -99;
+		BT_INFO_FUNC("%s: detect whole chip reset %s\n", __func__,
+			     rstflag == 1 ? "start" : "end");
+		goto OUT;
+	}
+	if (count == 0) {
+		retval = -EFAULT;
+		goto OUT;
+	}
+
+	write_size = count < BT_BUFFER_SIZE ? count : BT_BUFFER_SIZE;
+	if (copy_from_iter(&o_buf[0], write_size, from) != write_size) {
+		retval = -EFAULT;
+		goto OUT;
+	}
+	retval = bt_send_frame(write_size);
+OUT:
+	up(&wr_mtx);
 	return retval;
 }
 
@@ -452,6 +494,7 @@ const struct file_operations BT_fops = {
 	.release = BT_close,
 	.read = BT_read,
 	.write = BT_write,
+	.write_iter = BT_write_iter,
 /* .ioctl = BT_ioctl, */
 	.unlocked_ioctl = BT_unlocked_ioctl,
 	.compat_ioctl = BT_compat_ioctl,
