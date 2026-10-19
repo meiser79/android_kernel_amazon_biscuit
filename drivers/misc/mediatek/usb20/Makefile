@@ -65,6 +65,10 @@ ifneq (, $(filter $(CONFIG_ARCH_MTK_PROJECT), "crown" "crown"))
 subdir-ccflags-y += -DOTG_WITHOUT_VBUS_CHECK
 endif
 
+ifneq (, $(filter $(CONFIG_ARCH_MTK_PROJECT), "biscuit" "biscuit"))
+subdir-ccflags-y += -DOTG_WITHOUT_VBUS_CHECK
+endif
+
 ifneq (, $(filter $(CONFIG_ARCH_MTK_PROJECT), "cronos" "cronos"))
 subdir-ccflags-y += -DOTG_WITHOUT_VBUS_CHECK
 subdir-ccflags-y += -DCONFIG_NO_CHARGER_KPOC
