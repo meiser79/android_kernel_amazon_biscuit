@@ -601,7 +601,7 @@ static int mt_soc_audio_init(struct snd_soc_pcm_runtime *rtd)
 	return 0;
 }
 
-#ifdef CONFIG_ROOK
+#if defined(CONFIG_ROOK) || defined(CONFIG_BISCUIT)
 static int mt_soc_audio_init_tlv(struct snd_soc_pcm_runtime *rtd)
 {
 	int ret = 0;
@@ -1687,7 +1687,7 @@ static struct snd_soc_dai_link mt_soc_dai_common[] = {
 	 .ops = &tlv3101_machine_ops,
 	 .ignore_pmdown_time = 1,
 	},
-#ifdef CONFIG_ROOK
+#if defined(CONFIG_ROOK) || defined(CONFIG_BISCUIT)
 	{
 	 .name = "TI_DAC_Playback",
 	 .stream_name = MT_SOC_TI_PLAY_STREAM_NAME,
