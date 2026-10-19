@@ -20,6 +20,19 @@
 		reg = <0 0x40000000 0 0x20000000>;
 	};
 
+	/*
+	 * Fire OS 6's ATF and TEE own the top 8 MiB of DRAM: LK's atag,mem
+	 * ends at 0x5f800000, and its 3.18 kernel never maps the rest ("ATF
+	 * reserved memory: 0x5f800000 - 0x5fffffff"). This kernel ignores
+	 * atag,mem, and a memblock allocation there hangs the boot.
+	 */
+	reserved-memory {
+		fireos6-secure-reserved-memory@5f800000 {
+			no-map;
+			reg = <0 0x5f800000 0 0x800000>;
+		};
+	};
+
 	/* chosen */
 	chosen {
 		bootargs = "console=ttyMT0,921600n1 root=/dev/ram initrd=0x44000200,0x200000";
