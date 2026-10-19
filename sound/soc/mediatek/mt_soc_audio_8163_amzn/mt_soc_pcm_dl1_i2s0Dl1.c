@@ -929,6 +929,14 @@ static int mtk_pcm_I2S0dl1_start(struct snd_pcm_substream *substream)
 	SetSampleRate(Soc_Aud_Digital_Block_MEM_DL1, runtime->rate);
 	SetChannels(Soc_Aud_Digital_Block_MEM_DL1, runtime->channels);
 	SetMemoryPathEnable(Soc_Aud_Digital_Block_MEM_DL1, true);
+#ifdef CONFIG_BISCUIT
+	/*
+	 * Biscuit takes the codec MCLK from the camera MCLK, so unlike the
+	 * CONFIG_SND_I2S_MCLK boards nothing else has the AFE running: start
+	 * it with DL1, as its 3.18 driver does. close() turns it off again.
+	 */
+	EnableAfe(true);
+#endif
 
 	return 0;
 }
