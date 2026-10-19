@@ -104,7 +104,7 @@ static bool accdet_check_status(void)
 		return false;
 	}
 
-#ifdef CONFIG_ROOK
+#if defined(CONFIG_ROOK) || defined(CONFIG_BISCUIT)
 	current_status = gpio_get_value(gpiopin);
 #else
 	current_status = !gpio_get_value(gpiopin);
