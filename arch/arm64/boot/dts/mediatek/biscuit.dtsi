@@ -1231,10 +1231,6 @@
 	status = "disabled";
 };
 
-&imgsys {
-	status = "disabled";
-};
-
 &isp_display {
 	status = "disabled";
 };
