@@ -141,42 +141,6 @@
 	pinctrl-6 = <&aud_pins_extamp_low>;
 	pinctrl-7 = <&camera_pins_default>;
 
-	clocks = <&infracfg CLK_INFRA_AUDIO>,
-		 <&topckgen CLK_TOP_AUDIO_SEL>,
-		 <&topckgen CLK_TOP_AUD_INTBUS_SEL>,
-		 <&topckgen CLK_TOP_AUD_1_SEL>,
-		 <&topckgen CLK_TOP_AUD_2_SEL>,
-		 <&topckgen CLK_TOP_APLL1>,
-		 <&topckgen CLK_TOP_APLL2>,
-		 <&audiosys CLK_AUDIO_AFE>,
-		 <&audiosys CLK_AUDIO_DAC>,
-		 <&audiosys CLK_AUDIO_DAC_PREDIS>,
-		 <&audiosys CLK_AUDIO_ADC>,
-		 <&audiosys CLK_AUDIO_22M>,
-		 <&audiosys CLK_AUDIO_24M>,
-		 <&audiosys CLK_AUDIO_I2S>,
-		 <&audiosys CLK_AUDIO_APLL_TUNER>,
-		 <&audiosys CLK_AUDIO_APLL2_TUNER>,
-		 <&clk26m>;
-
-	clock-names = "aud_infra_clk",
-		      "top_mux_audio",
-		      "top_mux_audio_intbus",
-		      "aud_mux1_clk",
-		      "aud_mux2_clk",
-		      "apll1_clk",
-		      "apll2_clk",
-		      "aud_afe",
-		      "aud_dac",
-		      "aud_dac_predis",
-		      "aud_adc",
-		      "aud_22m",
-		      "aud_24m",
-		      "aud_i2s",
-		      "aud_apll_tnr",
-		      "aud_apll2_tnr",
-		      "top_clk26m_clk";
-
 	status = "okay";
 };
 
