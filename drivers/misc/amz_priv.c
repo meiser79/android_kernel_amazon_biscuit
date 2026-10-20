@@ -110,7 +110,7 @@ int amz_priv_trigger(int on)
 	 * applicable only in hw latch implementation
 	 */
 	pw_data->cur_priv = on;
-	sysfs_notify(pw_data->kobj, NULL, "privacy_state");
+	sysfs_notify(pw_data->kobj, "amz_privacy", "privacy_state");
 	pr_debug("%s:%u done [%d]\n", __func__, __LINE__, on);
 	return 0;
 }
@@ -135,7 +135,7 @@ int amz_priv_timer_sysfs(int on)
 	if (on)
 		privacy_mode_status = -1;
 
-	sysfs_notify(pw_data->kobj, NULL, "privacy_timer_on");
+	sysfs_notify(pw_data->kobj, "amz_privacy", "privacy_timer_on");
 	return 0;
 }
 EXPORT_SYMBOL(amz_priv_timer_sysfs);
