@@ -34,4 +34,15 @@ config MACH_MT8135
 	bool "MediaTek MT8135 SoCs support"
 	default ARCH_MEDIATEK
 
+config MACH_MT8163
+	bool "MediaTek MT8163"
+	select HAVE_ARM_ARCH_TIMER
+	select MTK_BASE_POWER
+	select MTK_SYS_CIRQ
+	select MTK_GIC_EXT
+	select CPU_IDLE
+	select CPU_IDLE_GOV_MTK
+	select MTK_SCHED_RQAVG_KS
+	select MTK_SCHED_RQAVG_US
+
 endif
