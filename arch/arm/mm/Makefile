@@ -100,6 +100,7 @@ obj-$(CONFIG_CPU_V7M)		+= proc-v7m.o
 AFLAGS_proc-v6.o	:=-Wa,-march=armv6
 AFLAGS_proc-v7.o	:=-Wa,-march=armv7-a
 
+obj-$(CONFIG_MEDIATEK_SOLUTION)	+= mt_cache_v7.o
 obj-$(CONFIG_OUTER_CACHE)	+= l2c-common.o
 obj-$(CONFIG_CACHE_FEROCEON_L2)	+= cache-feroceon-l2.o
 obj-$(CONFIG_CACHE_L2X0)	+= cache-l2x0.o l2c-l2x0-resume.o
