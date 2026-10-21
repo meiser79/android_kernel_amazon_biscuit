@@ -42,6 +42,12 @@ ifeq ($(CONFIG_FRAME_POINTER),y)
 KBUILD_CFLAGS	+=-fno-omit-frame-pointer -mapcs -mno-sched-prolog
 endif
 
+# The GCC 4.9 toolchain's ld is gold, which cannot parse the vectors
+# OVERLAY in vmlinux.lds; its BFD ld can.
+ifneq ($(findstring gold,$(shell $(LD) -v 2>/dev/null)),)
+LD		:= $(LD).bfd
+endif
+
 ifeq ($(CONFIG_CPU_BIG_ENDIAN),y)
 KBUILD_CPPFLAGS	+= -mbig-endian
 AS		+= -EB
@@ -296,6 +302,10 @@ core-y				+= $(machdirs) $(platdirs)
 drivers-$(CONFIG_OPROFILE)      += arch/arm/oprofile/
 
 libs-y				:= arch/arm/lib/ $(libs-y)
+
+MTK_PLATFORM := $(CONFIG_MTK_PLATFORM:"%"=%)
+MTK_PROJECT := $(CONFIG_ARCH_MTK_PROJECT:"%"=%)
+export MTK_PLATFORM MTK_PROJECT MTK_TARGET_PROJECT
 
 # Default target when executing plain make
 ifeq ($(CONFIG_XIP_KERNEL),y)
