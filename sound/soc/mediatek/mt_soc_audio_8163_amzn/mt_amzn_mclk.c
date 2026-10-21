@@ -1,5 +1,6 @@
 #include <linux/clk.h>
 #include <linux/types.h>
+#include <linux/math64.h>
 #include <linux/printk.h>
 #include <linux/slab.h>
 #include <linux/of_platform.h>
@@ -252,7 +253,7 @@ int mclk_divider_reg(uint64_t freq)
 	}
 
 	/* TG1_SEN_CK.CLKCNT = 48M/9.6M -1 = 4 */
-	clkcnt = (uint32_t) ((PLL_FREQ_48_MHZ/freq) - 1);
+	clkcnt = (uint32_t) (div64_u64(PLL_FREQ_48_MHZ, freq) - 1);
 
 	clkf_pol = !(clkcnt & 0x1);
 	clkf_edge = clkcnt > 1 ? ((clkcnt + 1) >> 1) : 1;

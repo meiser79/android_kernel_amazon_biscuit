@@ -760,7 +760,7 @@ static int amzn_asoc_capt_probe(struct snd_soc_platform *platform)
 	error = snd_soc_add_platform_controls(platform, amzn_mt_spi_controls,
 					ARRAY_SIZE(amzn_mt_spi_controls));
 	if (error) {
-		pr_err("%s: failed to add %lu controls\n", __func__,
+		pr_err("%s: failed to add %zu controls\n", __func__,
 				ARRAY_SIZE(amzn_mt_spi_controls));
 		return error;
 	}
