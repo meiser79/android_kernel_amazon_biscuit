@@ -1299,11 +1299,20 @@ void cpufreq_interactive_stop(struct cpufreq_policy *policy)
 	for_each_cpu(cpu, policy->cpus) {
 		icpu = &per_cpu(interactive_cpu, cpu);
 
-		icpu_cancel_work(icpu);
+		/*
+		 * Clear ipolicy before the slack timer goes: the idle notifier
+		 * (arm only) re-arms it from cpufreq_interactive_idle_end()
+		 * while ipolicy is set, and the next start's add_timer_on()
+		 * BUGs on a pending timer. irq_work does not check ipolicy, so
+		 * let it finish first; the update hooks are gone already.
+		 */
+		irq_work_sync(&icpu->irq_work);
 
 		down_write(&icpu->enable_sem);
 		icpu->ipolicy = NULL;
 		up_write(&icpu->enable_sem);
+
+		icpu_cancel_work(icpu);
 	}
 }
 
