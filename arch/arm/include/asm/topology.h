@@ -25,6 +25,12 @@ void init_cpu_topology(void);
 void store_cpu_topology(unsigned int cpuid);
 const struct cpumask *cpu_coregroup_mask(int cpu);
 
+/* arm64's topology_mtk.c helper; arm32 calls the cluster a socket. */
+static inline int arch_get_cluster_id(unsigned int cpu)
+{
+	return cpu_topology[cpu].socket_id < 0 ? 0 : cpu_topology[cpu].socket_id;
+}
+
 #ifdef CONFIG_CPU_FREQ
 #define arch_scale_freq_capacity cpufreq_scale_freq_capacity
 #define arch_scale_max_freq_capacity cpufreq_scale_max_freq_capacity
