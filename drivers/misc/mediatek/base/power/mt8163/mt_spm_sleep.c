@@ -71,7 +71,8 @@ u8 spm_snapshot_golden_setting;
 /**********************************************************
  * PCM code for suspend
  **********************************************************/
-#if defined(CONFIG_DOUGLAS) || defined(CONFIG_GIZA) || defined(CONFIG_ROOK)
+#if defined(CONFIG_DOUGLAS) || defined(CONFIG_GIZA) || defined(CONFIG_ROOK) || \
+	defined(CONFIG_BISCUIT)
 static const u32 suspend_binary[] = {
 	0xa1d30407, 0xa1d58407, 0x81f68407, 0x1800001f, 0xf7cf7f3f, 0x1b80001f,
 	0x20000000, 0x80300400, 0x80328400, 0xa1d28407, 0x81f20407, 0x81f30407,

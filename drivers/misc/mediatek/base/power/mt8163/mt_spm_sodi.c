@@ -60,7 +60,8 @@ enum spm_sodi_step {
 /*  */
 /* core 0 : GPT 4 */
 /* ========================================== */
-#if defined(CONFIG_DOUGLAS) || defined(CONFIG_GIZA) || defined(CONFIG_ROOK)
+#if defined(CONFIG_DOUGLAS) || defined(CONFIG_GIZA) || defined(CONFIG_ROOK) || \
+	defined(CONFIG_BISCUIT)
 static const u32 sodi_binary[] = {
 	0x81411801, 0xd8000125, 0x17c07c1f, 0x18c0001f, 0x10006240, 0xe0e00016,
 	0xe0e0001e, 0xe0e0000e, 0xe0e0000f, 0x803e0400, 0x1b80001f, 0x20000050,

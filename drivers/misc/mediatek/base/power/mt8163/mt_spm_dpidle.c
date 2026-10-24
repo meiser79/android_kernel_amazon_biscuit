@@ -74,7 +74,8 @@
 /**********************************************************
  * PCM code for deep idle
  **********************************************************/
-#if defined(CONFIG_DOUGLAS) || defined(CONFIG_GIZA) || defined(CONFIG_ROOK)
+#if defined(CONFIG_DOUGLAS) || defined(CONFIG_GIZA) || defined(CONFIG_ROOK) || \
+	defined(CONFIG_BISCUIT)
 static const u32 dpidle_binary[] = {
 	0x81f48407, 0x80328400, 0x80318400, 0xe8208000, 0x10006354, 0xffff1fff,
 	0xe8208000, 0x10001108, 0x00000000, 0x1b80001f, 0x20000034, 0xe8208000,
